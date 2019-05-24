@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+<script>
+{% block jquery %}
+
+var endpoint = '/api/watch/data/'
+var stepsData = []
+var hHRData = []
+var caloriesData = []
+var labels = []
+
+// Create plots for steps, highest heart rate, and calories burned
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data){
+        labels = data.labels
+        stepsData = data.steps
+        hHRData = data.hHR
+        caloriesData = data.calories
+        setChart()
+    },
+    error: function(error_data){
+        console.log("error")
+        console.log(error_data)
+    }
+})
+
+function setChart(){
+    var ctx = document.getElementById('myChart');
+    var ctx2 = document.getElementById('myChart2');
+    var ctx3 = document.getElementById('myChart3');
+    ctx.height = 150;
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Steps',
+                fill: false,
+                data: stepsData,
+                borderColor: "#FBA441",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 21
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        max:15000,
+                        min:6000
+                    }
+                }]
+            }
+        }
+    });
+
+    ctx2.height = 150;
+    var myChart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Calories',
+                fill: false,
+                data: caloriesData,
+                borderColor: "#f2ad9d",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 21
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        max:1000,
+                        min:200
+                    }
+                }]
+            }
+        }
+    });
+
+    ctx3.height = 150;
+    var myChart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Highest Heart Rate',
+                fill: false,
+                data: hHRData,
+                borderColor: "#db3948",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 21
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        max:180,
+                        min:130
+                    }
+                }]
+            }
+        }
+    });
+}
+
+
+{% endblock %}
+</script>
+
+{% block content %}
+<hr>
+
+<!--     Header Portion that links to other user interfaces-->
+<h1>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div id="navbarNav" style="display:table-cell; vertical-align:top;">
+      <ul class="navbar-nav" style="float:left; list-style: none; margin-left:-50px;">
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5" href="{% url 'summary' %}">Summary</a> 
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5" href="{% url 'scale-home' %}">Smart Scale</a> 
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5" href="{% url 'sleep-home' %}"> Sleep Tracker</a>
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color:black"href="{% url 'watch-home' %}">Fitness Watch</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+</h1>
+
+<div class='row' style = "margin-top:-25px">
+    <div class='col-sm-12' url-endpoint = '{% url "watch-api-data" %}'>
+    <hr>
+    <font size="+1" color = 'DimGrey'>
+
+        <!--     Button to turn device ON/OFF-->
+        <form method="get" name="watch-home">
+            <button type="submit" name="device">ON/OFF</button>
+        </form>
+
+        <!--     Display current state and last sync-->
+        <br><b> Current State:</b> {{watch_status}} <br>
+        <b> Last Sync:</b> {{last_sync}}<br>
+
+        <!--     Input to select start and end dates-->
+        <form method="get" name="watch-api-data">
+            <b>Dates: </b> 
+            <input type="text" value = {{start_date}} name="start_date" style="width: 120px">
+            <b> to </b>
+            <input type="text" value = {{end_date}} name="end_date" style="width: 120px">
+            <button type="submit" name = 'dates'> > </button> 
+        </form>
+    </font>
+    <hr>
+
+    <!--     Show averages within the dates-->
+    <div style="width: 1200px;">
+     <div style="float: left; width: 300px;">
+            <font size="+1" color="#C70039">Steps Average<br></font>
+            <font size="+3" color = 'DimGrey'>{{avg_steps}}</font>
+     </div>
+     <div style="float: left; width: 300px;">
+            <font size="+1" color="#C70039">Highest HR Average <br></font>
+            <font size="+3" color = 'DimGrey'>{{avg_hHR}}</font>
+    </div>
+     <div style="float: left; width: 200px;">
+            <font size="+1" color="#C70039">Calories Average <br></font>
+            <font size="+3" color = 'DimGrey'>{{avg_calories}}</font>
+    </div>
+     <br style="clear: left;" />
+    </div>
+
+    <!--     Display line plots created-->
+    <hr> 
+    <canvas id="myChart" width="400" height="300"></canvas>
+    <canvas id="myChart2" width="400" height="300"></canvas>
+    <canvas id="myChart3" width="400" height="300"></canvas>
+
+    </div>
+</div>
+
+{% endblock content %}

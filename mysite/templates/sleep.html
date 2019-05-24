@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+<script>
+{% block jquery %}
+
+
+// Create plots for hours selpt, breathing rate, temperature
+var endpoint = '/api/sleep/data/'
+var hoursData = []
+var breathingData = []
+var tempData = []
+var labels = []
+
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data){
+        labels = data.labels
+        hoursData = data.hours
+        breathingData = data.breathing
+        tempData = data.temp
+        setChart()
+    },
+    error: function(error_data){
+        console.log("error")
+        console.log(error_data)
+    }
+})
+
+function setChart(){
+    var ctx = document.getElementById('myChart');
+    var ctx2 = document.getElementById('myChart2');
+    var ctx3 = document.getElementById('myChart3');
+    ctx.height = 150;
+    // ctx.width = 50;
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Hours',
+                fill: false,
+                data: hoursData,
+                borderColor: "#78D5D7",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 21
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        max:13,
+                        min:3
+                    }
+                }]
+            }
+        }
+    });
+
+    ctx2.height = 150;
+    var myChart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Breathing',
+                fill: false,
+                data: breathingData,
+                borderColor: "#8e9691",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 21
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        max:28,
+                        min:5
+                    }
+                }]
+            }
+        }
+    });
+
+    ctx3.height = 150;
+    var myChart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Temperature',
+                fill: false,
+                data: tempData,
+                borderColor: "#02C39A",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 21
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        max:103,
+                        min:93
+                    }
+                }]
+            }
+        }
+    });
+}
+
+
+
+
+{% endblock %}
+</script>
+
+{% block content %}
+
+
+<!--     Header Portion that links to other user interfaces-->
+<hr>
+<h1>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+     <div id="navbarNav" style="display:table-cell; vertical-align:top;">
+      <ul class="navbar-nav" style="float:left; list-style: none; margin-left:-50px;">
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5" href="{% url 'summary' %}">Summary</a> 
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5" href="{% url 'scale-home' %}">Smart Scale</a> &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color:black" href="{% url 'sleep-home' %}"> Sleep Tracker</a>
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5"href="{% url 'watch-home' %}">Fitness Watch</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+</h1>
+
+<div class='row' style = "margin-top:-25px">
+
+    <div class='col-sm-12' url-endpoint = '{% url "sleep-api-data" %}'>
+    <hr>
+    <font size="+1" color = 'DimGrey'>
+
+        <!--     Button to turn device ON/OFF-->
+        <form method="get" name="sleep-home">
+            <button type="submit" name="device">ON/OFF</button>
+        </form>
+
+        <!--     Display current state and last sync-->
+        <br><b>  Current State:</b> {{sleep_status}} <br>
+        <b> Last Sync:</b> {{last_sync}}<br>
+
+        <!--     Input to select start and end dates-->
+        <form method="get" name="sleep-api-data">
+            <b>Dates: </b> 
+            <input type="text" value = {{start_date}} name="start_date" style="width: 120px">
+            <b> to </b>
+            <input type="text" value = {{end_date}} name="end_date" style="width: 120px">
+             <button type="submit" name = 'dates'> > </button> 
+        </form>
+    </font>
+
+
+    <!--     Show averages within the dates-->
+     <hr>
+    <div style="width: 1200px;">
+     <div style="float: left; width: 300px;">
+            <font size="+1" color="#3D9970">Hours Average<br></font>
+            <font size="+3" color = 'DimGrey'>{{avg_hours}}</font>
+     </div>
+     <div style="float: left; width: 300px;">
+            <font size="+1" color="#3D9970">Breathing Average <br></font>
+            <font size="+3" color = 'DimGrey'>{{avg_breathing}}</font>
+    </div>
+     <div style="float: left; width: 200px;">
+            <font size="+1" color="#3D9970">Temperature Average <br></font>
+            <font size="+3" color = 'DimGrey'>{{avg_temp}}</font>
+    </div>
+     <br style="clear: left;" />
+    </div>
+
+    <!--     Display line plots created-->
+    <hr> 
+    <canvas id="myChart" width="400" height="300"></canvas>
+    <canvas id="myChart2" width="400" height="300"></canvas>
+    <canvas id="myChart3" width="400" height="300"></canvas>
+
+    </div>
+</div>
+
+{% endblock content %}

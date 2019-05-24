@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+<script>
+{% block jquery %}
+
+// Create bar chart of steps for this week and adds line for goal
+var endpoint = '/api/summary/data/'
+var labels = []
+var stepsData = []
+
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data) {
+        labels = data.labels
+        stepsData = data.steps
+        setChart()
+    },
+    error: function(error_data) {
+        console.log("error")
+        console.log(error_data)
+    }
+})
+
+function setChart(){
+    var ctx = document.getElementById('myChart');
+
+    ctx.height = 100;
+    ctx.width = -100;
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Steps',
+                fill: false,
+                data: stepsData,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                ],
+            borderColor: "#53adc6",
+            borderWidth: 1,
+            },
+            {
+            label: 'Goal', // Creates line of step goal
+            fill: false,
+            data: [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
+            borderColor: "#727c7f",
+            borderWidth: 2,
+            type: 'line'
+            }]
+        },
+      });
+}
+
+
+{% endblock %}
+</script>
+
+{% block content %}
+
+<!--     Header Portion that links to other user interfaces-->
+<hr>
+<h1>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+     <div id="navbarNav" style="display:table-cell; vertical-align:top;">
+      <ul class="navbar-nav" style="float:left; list-style: none; margin-left:-50px;">
+        <li class="nav-item">
+          <a class="nav-link" style= "color: black" href="{% url 'summary' %}">Summary</a> 
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5" href="{% url 'scale-home' %}">Smart Scale</a> 
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color:#A5A5A5" href="{% url 'sleep-home' %}"> Sleep Tracker</a>
+          &nbsp&nbsp
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style= "color: #A5A5A5"href="{% url 'watch-home' %}">Fitness Watch</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</h1>
+
+
+<!--    Title for Summary Page-->
+<div class='row' style = "margin-top:-25px"> <hr>
+    <font size="+3" color = 'Black'> Hello John! </font> <br> 
+    <br>
+
+    <div style="float: left; width: 275px;">
+        <font size="+2" color = 'DimGrey'> This Week's Activity </font> 
+    </div>
+
+<!--     Recommendation for user and link to article to learn more -->
+    <div style="float: right; width: 300px;">
+    <font size="+1" color = 'black'> Try hitting 10,000 steps a day! <br> </font>
+    <font size="-1" color = 'DimGrey'>That's the American Heart Association <br> Recommendation.</font>
+        <a href = 'https://well.blogs.nytimes.com/2012/02/29/why-its-so-important-to-keep-moving/'> <font size = "-1" color = '#db5c9d'> Learn More. </font> </a> 
+    </div>
+
+<!--     Display chart of steps in last 7 days -->
+    <canvas id="myChart" width="50" height="200"></canvas>
+    <br>
+    <hr>
+
+<!--     Show sum and averages for different metrics -->
+    <div style="float: left; width: 100px;">
+        <font size="+4" color = 'DimGrey'> <br> </font>
+    </div>
+    <div style="float: left; width: 275px;">
+            <font size="+4" color = 'DimGrey'>{{sum_calories}} <br> </font>
+            <font size="+1" color="#3D9970">calories burned<br></font>
+            <font size="+0" color="#A5A5A5">{{calories_goal}}% of Weekly Goal <br></font>
+     </div>
+     <div style="float: left; width: 275px;">
+            <font size="+4" color = 'DimGrey'>{{sum_hours}}<br></font>
+            <font size="+1" color="#308396">hours slept <br></font>
+            <font size="+0" color="#A5A5A5">{{hours_goal}}% of Weekly Goal <br></font>
+    </div>
+     <div style="float: left; width: 275px;">
+            <font size="+4" color = 'DimGrey'>{{avg_weight}}<br></font>
+            <font size="+1" color="#ed8d34">weight average <br></font>
+            <font size="+0" color="#A5A5A5">Overall Goal: 145 <br></font>
+    </div>
+     <div style="float: left; width: 220px;">
+            <font size="+4" color = 'DimGrey'>{{avg_bmi}}<br> </font>
+            <font size="+1" color="#d62856">bmi average <br></font>
+            <font size="+0" color="#A5A5A5"> Overall Goal: 21.5 <br></font>
+    </div>
+
+</div>
+
+{% endblock content %}
